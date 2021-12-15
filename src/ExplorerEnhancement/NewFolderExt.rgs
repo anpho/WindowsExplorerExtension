@@ -1,0 +1,33 @@
+HKCR
+{
+	NoRemove CLSID
+	{
+		ForceRemove {c36a65af-0a1e-4e09-9729-6da3e4e4461a} = s 'NewFolderExt class'
+		{
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+	NoRemove *
+	{
+		NoRemove shellex
+		{
+			NoRemove ContextMenuHandlers
+			{
+				ForceRemove NewFolderExtenstion = s '{c36a65af-0a1e-4e09-9729-6da3e4e4461a}'
+			}
+		}
+	}
+	NoRemove Directory
+	{
+		NoRemove shellex
+		{
+			NoRemove ContextMenuHandlers
+			{
+				ForceRemove NewFolderExtenstion = s '{c36a65af-0a1e-4e09-9729-6da3e4e4461a}'
+			}
+		}
+	}
+}
