@@ -347,7 +347,7 @@ HRESULT __stdcall CNewFolderExt::DoCreateAndMoveItems(CMINVOKECOMMANDINFO* pici,
 	return hr;
 }
 /// <summary>
-/// 以线程方式执行重命名操作，测试失败了，目前未使用
+/// 以线程方式执行重命名操作，目前大部分情况下可用
 /// </summary>
 /// <param name="pArguments">threadParam结构</param>
 /// <returns></returns>
