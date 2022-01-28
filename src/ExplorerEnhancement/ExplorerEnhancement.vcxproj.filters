@@ -17,6 +17,9 @@
       <UniqueIdentifier>{041f24d0-056d-4806-a0f4-9f3a2e004a4e}</UniqueIdentifier>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Module:NewFolderExt">
+      <UniqueIdentifier>{22b3dfd5-fee8-46b6-8f31-2f2e6a92de57}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -38,7 +41,7 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="NewFolderExt.h">
-      <Filter>头文件</Filter>
+      <Filter>Module:NewFolderExt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -55,7 +58,7 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="NewFolderExt.cpp">
-      <Filter>源文件</Filter>
+      <Filter>Module:NewFolderExt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -71,7 +74,7 @@
       <Filter>源文件</Filter>
     </None>
     <None Include="NewFolderExt.rgs">
-      <Filter>资源文件</Filter>
+      <Filter>Module:NewFolderExt</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
