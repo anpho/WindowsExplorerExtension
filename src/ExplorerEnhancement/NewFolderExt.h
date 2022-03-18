@@ -114,7 +114,16 @@ public:
 
 	HRESULT __stdcall DoCreateAndMoveItems(CMINVOKECOMMANDINFO* pici, IShellItemArray* psiItemArray);
 
-	int first_common_substring_length(const ATL::CString& str1, const ATL::CString& str2);
+	/*
+	* 2022/3/18
+	* 增加 length_to_compare 参数，提高处理速度
+	*/
+	int first_common_substring_length(const ATL::CString& str1, const ATL::CString& str2, int length_to_compare);
+	/*
+	* 2022/3/18
+	* 该函数已提交leetcode，用于提高处理速度
+	*/
+	ATL::CString longestCommonPrefix(const std::vector<ATL::CString>& strs);
 
 	ATL::CString find_common_prefix(const std::vector<ATL::CString> filepaths, OUT ATL::CString* default_path);
 

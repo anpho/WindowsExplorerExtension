@@ -332,6 +332,10 @@ HRESULT __stdcall CNewFolderExt::DoCreateAndMoveItems(CMINVOKECOMMANDINFO* pici,
 			hr = SHCreateItemFromParsingName((*iter).GetString(), NULL, IID_PPV_ARGS(&pitem));
 			if (SUCCEEDED(hr)) {
 				pfo->MoveItem(pitem, pDstFolder, extract_filename((*iter)).GetString(), NULL);
+				/*
+				* 2022/3/18 对于每一个移动的文件，向shell发送通知
+				*/
+				SHChangeNotify(SHCNE_DELETE, SHCNF_IDLIST, pitem, NULL);
 			}
 		}
 
@@ -361,7 +365,7 @@ unsigned __stdcall selectItem(void* pArguments) {
 	CComPtr<IShellWindows> shellwindow;
 	HRESULT h = CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_ALL, IID_PPV_ARGS(&shellwindow));
 	if (FAILED(h)) { return 0; }
-	
+
 	long count;
 	shellwindow->get_Count(&count);
 	for (long i = 0; i < count; i++) {
@@ -426,19 +430,44 @@ unsigned __stdcall selectItem(void* pArguments) {
 /// <param name="str1"></param>
 /// <param name="str2"></param>
 /// <returns></returns>
-int CNewFolderExt::first_common_substring_length(const ATL::CString& str1, const ATL::CString& str2)
+int CNewFolderExt::first_common_substring_length(const ATL::CString& str1, const ATL::CString& str2, int length_to_compare)
 {
-	int len = min(str1.GetLength(), str2.GetLength());
-	int breakpoint = 0;
-	for (int i = 0; i < len; i++) {
-		if (str1.GetAt(i) == str2.GetAt(i)) {
-			breakpoint = i + 1;
-		}
-		else {
+	/*
+	* 2022/3/18 重构，增加length_to_compare参数，用于提高处理速度。
+	*/
+	int l = min(str1.GetLength(), str2.GetLength());
+	l = min(l, length_to_compare);
+	int result = l;
+	for (int i = 0; i < l; i++) {
+		if (str1[i] != str2[i]) {
+			result = i;
 			break;
 		}
 	}
-	return breakpoint;
+	return result;
+}
+
+/// <summary>
+/// 求一组字符串的最长公共前导子串
+/// </summary>
+/// <param name="strs"></param>
+/// <returns></returns>
+ATL::CString CNewFolderExt::longestCommonPrefix(const std::vector<ATL::CString>& strs)
+{
+	/*
+	* 2022/3/18 重构，增加length_to_compare参数，用于提高处理速度。
+	*/
+	ATL::CString base = strs[0];
+	int common_prefix_length = base.GetLength();
+	for (int i = 1; i < strs.size(); i++) {
+		common_prefix_length = first_common_substring_length(base, strs[i], common_prefix_length);
+	}
+	if (common_prefix_length == 0) {
+		return ATL::CString("");
+	}
+	else {
+		return base.Left(common_prefix_length);
+	}
 }
 
 /// <summary>
@@ -460,25 +489,9 @@ ATL::CString CNewFolderExt::find_common_prefix(const std::vector<ATL::CString> f
 		filenames.push_back(_filename);
 	}
 
+	ATL::CString common_part = longestCommonPrefix(filenames);
 
-	ATL::CString common_part = filenames.at(0);
-	int differpoint = MAX_PATH;
-	for (auto iter = filenames.begin() + 1; iter != filenames.end(); iter++) {
-		size_t _differ_at = first_common_substring_length(common_part, (*iter));
-		if (_differ_at < differpoint) {
-			differpoint = (int)_differ_at;
-			common_part = common_part.Left(differpoint);
-		}
-		if (0 == differpoint) {
-			break;
-		}
-	}
-	if (0 == differpoint) {
-		return ATL::CString("");
-	}
-	else {
-		return common_part.Trim();
-	}
+	return common_part.Trim();
 }
 
 /// <summary>
