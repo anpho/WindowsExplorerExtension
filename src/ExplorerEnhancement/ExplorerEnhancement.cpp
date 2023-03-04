@@ -7,7 +7,7 @@
 #include "ExplorerEnhancement_i.h"
 #include "dllmain.h"
 
-
+extern HINSTANCE g_hInstance;
 using namespace ATL;
 
 // 用于确定 DLL 是否可由 OLE 卸载。
