@@ -43,6 +43,9 @@
     <ClInclude Include="NewFolderExt.h">
       <Filter>Module:NewFolderExt</Filter>
     </ClInclude>
+    <ClInclude Include="common.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExplorerEnhancement.cpp">
@@ -60,6 +63,9 @@
     <ClCompile Include="NewFolderExt.cpp">
       <Filter>Module:NewFolderExt</Filter>
     </ClCompile>
+    <ClCompile Include="common.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ExplorerEnhancement.rc">
@@ -76,6 +82,7 @@
     <None Include="NewFolderExt.rgs">
       <Filter>Module:NewFolderExt</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ExplorerEnhancement.idl">
@@ -86,8 +93,6 @@
     <Xml Include="AppxManifest.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="logo.png">
-      <Filter>资源文件</Filter>
-    </Image>
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
 </Project>

@@ -9,5 +9,12 @@
 
 // 添加要在此处预编译的标头
 #include "framework.h"
+#include <wil/resource.h>
+#include <wil/result.h>
+#include <winrt/windows.foundation.h>
+
+#include <atlpath.h>
+#include <string>
+#pragma comment( lib,"winmm.lib" )
 
 #endif //PCH_H

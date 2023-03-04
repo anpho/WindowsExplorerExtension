@@ -2,11 +2,43 @@
 
 #include "pch.h"
 #include "NewFolderExt.h"
-#include <atlpath.h>
-#include <string>
-#pragma comment( lib,"winmm.lib" )
+#include "common.h"
+
 
 // CNewFolderExt
+extern HINSTANCE g_hInstance;
+
+CNewFolderExt::CNewFolderExt()
+{
+	_pstmShellItemArray = nullptr;
+	spsia = nullptr;
+	selected_files.clear();
+	if (!m_contextmenu_name.LoadStringW(IDS_MENUITEM)) {
+		m_contextmenu_name = L"New Folder +";
+	}
+
+	if (!m_icon) {
+		HINSTANCE hShell32 = GetModuleHandle(L"Shell32.dll");
+		HICON hIcon = (HICON)LoadImage(hShell32, MAKEINTRESOURCE(20), IMAGE_ICON, GetSystemMetrics(SM_CXMENUCHECK), GetSystemMetrics(SM_CYMENUCHECK), LR_LOADTRANSPARENT | LR_SHARED);
+		SIZE t;
+		t.cx = GetSystemMetrics(SM_CXMENUCHECK);
+		t.cy = GetSystemMetrics(SM_CYMENUCHECK);
+		m_icon = IconToBitmap(hIcon, &t);
+	}
+}
+
+CNewFolderExt::~CNewFolderExt()
+{
+	if (m_icon) {
+		DeleteObject(m_icon);
+		m_icon = nullptr;
+	}
+	selected_files.clear();
+	m_spdo = nullptr;
+	ibindctx = nullptr;
+	IShellItemArray* spsia = nullptr;
+	IStream* _pstmShellItemArray = nullptr;
+}
 
 DWORD CNewFolderExt::_ThreadProc()
 {
@@ -22,196 +54,61 @@ DWORD CNewFolderExt::_ThreadProc()
 	return 0;
 }
 
-/// <summary>
-/// https://www.cnblogs.com/weiym/p/3928348.html
-/// </summary>
-/// <param name="hIcon"></param>
-/// <param name="pTargetSize"></param>
-/// <returns></returns>
-HBITMAP CNewFolderExt::IconToBitmap(HICON hIcon, SIZE* pTargetSize = NULL)
+DWORD __stdcall CNewFolderExt::s_ThreadProc(void* pv)
 {
-	ICONINFO info = { 0 };
-	if (hIcon == NULL
-		|| !GetIconInfo(hIcon, &info)
-		|| !info.fIcon)
-	{
-		return NULL;
-	}
 
-	INT nWidth = 0;
-	INT nHeight = 0;
-	if (pTargetSize != NULL)
-	{
-		nWidth = pTargetSize->cx;
-		nHeight = pTargetSize->cy;
-	}
-	else
-	{
-		if (info.hbmColor != NULL)
-		{
-			BITMAP bmp = { 0 };
-			GetObject(info.hbmColor, sizeof(bmp), &bmp);
+	CNewFolderExt* pecv = (CNewFolderExt*)pv;
+	const DWORD ret = pecv->_ThreadProc();
+	pecv->Release();
+	return ret;
 
-			nWidth = bmp.bmWidth;
-			nHeight = bmp.bmHeight;
-		}
-	}
-
-	if (info.hbmColor != NULL)
-	{
-		DeleteObject(info.hbmColor);
-		info.hbmColor = NULL;
-	}
-
-	if (info.hbmMask != NULL)
-	{
-		DeleteObject(info.hbmMask);
-		info.hbmMask = NULL;
-	}
-
-	if (nWidth <= 0
-		|| nHeight <= 0)
-	{
-		return NULL;
-	}
-
-	INT nPixelCount = nWidth * nHeight;
-
-	HDC dc = GetDC(NULL);
-	INT* pData = NULL;
-	HDC dcMem = NULL;
-	HBITMAP hBmpOld = NULL;
-	bool* pOpaque = NULL;
-	HBITMAP dib = NULL;
-	BOOL bSuccess = FALSE;
-
-	do
-	{
-		BITMAPINFOHEADER bi = { 0 };
-		bi.biSize = sizeof(BITMAPINFOHEADER);
-		bi.biWidth = nWidth;
-		bi.biHeight = -nHeight;
-		bi.biPlanes = 1;
-		bi.biBitCount = 32;
-		bi.biCompression = BI_RGB;
-		dib = CreateDIBSection(dc, (BITMAPINFO*)&bi, DIB_RGB_COLORS, (VOID**)&pData, NULL, 0);
-		if (dib == NULL) break;
-
-		memset(pData, 0, nPixelCount * 4);
-
-		dcMem = CreateCompatibleDC(dc);
-		if (dcMem == NULL) break;
-
-		hBmpOld = (HBITMAP)SelectObject(dcMem, dib);
-		::DrawIconEx(dcMem, 0, 0, hIcon, nWidth, nHeight, 0, NULL, DI_MASK);
-
-		pOpaque = new(std::nothrow) bool[nPixelCount];
-		if (pOpaque == NULL) break;
-		for (INT i = 0; i < nPixelCount; ++i)
-		{
-			pOpaque[i] = !pData[i];
-		}
-
-		memset(pData, 0, nPixelCount * 4);
-		::DrawIconEx(dcMem, 0, 0, hIcon, nWidth, nHeight, 0, NULL, DI_NORMAL);
-
-		BOOL bPixelHasAlpha = FALSE;
-		UINT* pPixel = (UINT*)pData;
-		for (INT i = 0; i < nPixelCount; ++i, ++pPixel)
-		{
-			if ((*pPixel & 0xff000000) != 0)
-			{
-				bPixelHasAlpha = TRUE;
-				break;
-			}
-		}
-
-		if (!bPixelHasAlpha)
-		{
-			pPixel = (UINT*)pData;
-			for (INT i = 0; i < nPixelCount; ++i, ++pPixel)
-			{
-				if (pOpaque[i])
-				{
-					*pPixel |= 0xFF000000;
-				}
-				else
-				{
-					*pPixel &= 0x00FFFFFF;
-				}
-			}
-		}
-
-		bSuccess = TRUE;
-
-	} while (FALSE);
-
-
-	if (pOpaque != NULL)
-	{
-		delete[]pOpaque;
-		pOpaque = NULL;
-	}
-
-	if (dcMem != NULL)
-	{
-		SelectObject(dcMem, hBmpOld);
-		DeleteDC(dcMem);
-	}
-
-	ReleaseDC(NULL, dc);
-
-	if (!bSuccess)
-	{
-		if (dib != NULL)
-		{
-			DeleteObject(dib);
-			dib = NULL;
-		}
-	}
-
-	return dib;
 }
+
+
 
 HRESULT __stdcall CNewFolderExt::Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataObject* pdtobj, HKEY hkeyProgID)
 {
+
 	m_spdo = pdtobj;
-	bool r = selected_files.empty();
+	selected_files.clear();
 
-	{
-		/*
-		* 检查是否存在可移动的文件，如果只存在一项且该项为文件夹，则不显示
-		*/
-		if (SUCCEEDED(GetShellItemArrayFromDataObject(m_spdo, &spsia))) {
-			DWORD file_count = 0;
-			spsia->GetCount(&file_count);
-			for (DWORD i = 0; i < file_count; i++) {
-				CComPtr<IShellItem> item;
-				LPWSTR name_buffer;
-				spsia->GetItemAt(i, &item);
-				item->GetDisplayName(SIGDN::SIGDN_DESKTOPABSOLUTEPARSING, &name_buffer);
-				ATL::CString item_name(name_buffer);
-				selected_files.push_back(item_name);
-				CoTaskMemFree(name_buffer);
-			}
+	/*
+	* 检查是否存在可移动的文件，如果只存在一项且该项为文件夹，则不显示
+	*/
+	if (SUCCEEDED(GetShellItemArrayFromDataObject(m_spdo, &spsia))) {
+		DWORD file_count = 0;
+		spsia->GetCount(&file_count);
+		for (DWORD i = 0; i < file_count; i++) {
+			//将文件列表存入vector<CString>
+			CComPtr<IShellItem> current_item;
+			LPWSTR filename_buffer;
+			spsia->GetItemAt(i, &current_item);
+			current_item->GetDisplayName(SIGDN::SIGDN_DESKTOPABSOLUTEPARSING, &filename_buffer);
 
-			if (selected_files.size() == 1) {
-				ATL::CPath onePath(selected_files.at(0));
-				if (onePath.IsDirectory()) {
-					return E_INVALIDARG;
-				}
+			ATL::CString item_name(filename_buffer);
+			selected_files.push_back(item_name);
+			CoTaskMemFree(filename_buffer);
+		}
+
+		// 如果只选中了一个文件夹的话就不显示。只选中一个文件的话可以。
+		if (selected_files.size() == 1) {
+			ATL::CPath onePath(selected_files.at(0));
+			if (onePath.IsDirectory()) {
+				return E_INVALIDARG;
 			}
-			return S_OK;
 		}
-		else {
-			return E_FAIL;
-		}
+		return S_OK;
 	}
-	return E_FAIL;
+	else {
+		return E_FAIL;
+	}
+
 }
 
 HRESULT __stdcall CNewFolderExt::GetShellItemArrayFromDataObject(_In_ IUnknown* dataSource, _COM_Outptr_ IShellItemArray** items)
 {
+	//从DataObject里获取ShellItemArray。
+
 	*items = nullptr;
 	CComPtr<IDataObject> dataObj;
 	HRESULT hr;
@@ -223,7 +120,6 @@ HRESULT __stdcall CNewFolderExt::GetShellItemArrayFromDataObject(_In_ IUnknown* 
 	{
 		hr = dataSource->QueryInterface(IID_PPV_ARGS(items));
 	}
-
 	return hr;
 }
 
@@ -232,7 +128,12 @@ HRESULT __stdcall CNewFolderExt::QueryContextMenu(HMENU hmenu, UINT indexMenu, U
 	if (uFlags & CMF_DEFAULTONLY) {
 		return E_FAIL;
 	}
+	DWORD enabled = RegGetDword(HKEY_CURRENT_USER, M_REG_BASEKEY, M_REG_ENABLE_NEWFOLDER);
+	if (!enabled) {
+		return MAKE_HRESULT(SEVERITY_SUCCESS, 0, USHORT(0));
+	}
 
+	//构建菜单项
 
 	MENUITEMINFO mii = { 0 };
 	mii.cbSize = sizeof(MENUITEMINFO);
@@ -242,13 +143,15 @@ HRESULT __stdcall CNewFolderExt::QueryContextMenu(HMENU hmenu, UINT indexMenu, U
 	mii.wID = idCmdFirst++;
 	mii.hbmpItem = m_icon;
 
-	InsertMenuItem(hmenu, 1, TRUE, (LPCMENUITEMINFO)&mii);
+	InsertMenuItem(hmenu, 0, TRUE, (LPCMENUITEMINFO)&mii);
 
 	return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1);
 }
 
 HRESULT __stdcall CNewFolderExt::InvokeCommand(CMINVOKECOMMANDINFO* pici)
 {
+	//return DoCreateAndMoveItems(pici, NULL);
+
 	if ((IS_INTRESOURCE(pici->lpVerb)) && (LOWORD(pici->lpVerb) == 0)) {
 		HRESULT hr = CoMarshalInterThreadInterfaceInStream(__uuidof(spsia), spsia, &_pstmShellItemArray);
 		if (SUCCEEDED(hr))
@@ -287,12 +190,10 @@ HRESULT __stdcall CNewFolderExt::DoCreateAndMoveItems(CMINVOKECOMMANDINFO* pici,
 			common_part.Append(std::to_wstring(rand() * 7 % 100).c_str());
 		}
 	}
-	hr = CoInitialize(NULL);
-	if (FAILED(hr)) return hr;
+	RETURN_IF_FAILED(CoInitialize(NULL));
 
 	CComPtr<IFileOperation> pfo;
-	hr = CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&pfo));
-	if (FAILED(hr)) return hr;
+	RETURN_IF_FAILED(CoCreateInstance(CLSID_FileOperation, NULL, CLSCTX_ALL, IID_PPV_ARGS(&pfo)));
 
 	//此处似乎不应该使用pici->hwnd，待考
 	HWND hwnd = pici ? pici->hwnd : GetActiveWindow();
@@ -300,7 +201,6 @@ HRESULT __stdcall CNewFolderExt::DoCreateAndMoveItems(CMINVOKECOMMANDINFO* pici,
 
 	//设置一下Pfo的标志位，此处不设置也可
 	pfo->SetOperationFlags(FOF_ALLOWUNDO | FOF_SIMPLEPROGRESS | FOF_NOCONFIRMMKDIR);
-
 
 	//要生成的文件夹路径
 	CComPtr<IShellItem> pDstFolder;
@@ -317,16 +217,14 @@ HRESULT __stdcall CNewFolderExt::DoCreateAndMoveItems(CMINVOKECOMMANDINFO* pici,
 	}
 
 	//把目标文件夹创建为IShellItem，给pfo使用
-	hr = SHCreateItemFromParsingName(path_of_the_new_folder.GetString(), NULL, IID_PPV_ARGS(&pDstFolder));
-	if (FAILED(hr)) return hr;
+	RETURN_IF_FAILED(SHCreateItemFromParsingName(path_of_the_new_folder.GetString(), NULL, IID_PPV_ARGS(&pDstFolder)));
+
 
 	if (!psiItemArray) {
 		for (auto iter = selected_files.begin(); iter != selected_files.end(); iter++) {
-			{
-				//避免同名文件夹移动
-				if ((*iter).CompareNoCase(path_of_the_new_folder) == 0) {
-					continue;
-				}
+			//避免同名文件夹移动
+			if ((*iter).CompareNoCase(path_of_the_new_folder) == 0) {
+				continue;
 			}
 			CComPtr<IShellItem> pitem;
 			hr = SHCreateItemFromParsingName((*iter).GetString(), NULL, IID_PPV_ARGS(&pitem));
@@ -351,20 +249,17 @@ HRESULT __stdcall CNewFolderExt::DoCreateAndMoveItems(CMINVOKECOMMANDINFO* pici,
 	return hr;
 }
 /// <summary>
-/// 以线程方式执行重命名操作，目前大部分情况下可用
+/// 以线程方式执行选中并重命名操作，目前大部分情况下可用
 /// </summary>
 /// <param name="pArguments">threadParam结构</param>
 /// <returns></returns>
 unsigned __stdcall selectItem(void* pArguments) {
 
-	if (FAILED(CoInitialize(NULL))) {
-		return 0;
-	};
+	RETURN_IF_FAILED(CoInitialize(NULL));
 	ATL::CString* folder_to_select = static_cast<ATL::CString*>(pArguments);
 
 	CComPtr<IShellWindows> shellwindow;
-	HRESULT h = CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_ALL, IID_PPV_ARGS(&shellwindow));
-	if (FAILED(h)) { return 0; }
+	RETURN_IF_FAILED(CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_ALL, IID_PPV_ARGS(&shellwindow)));
 
 	long count;
 	shellwindow->get_Count(&count);
@@ -373,9 +268,10 @@ unsigned __stdcall selectItem(void* pArguments) {
 		CComVariant va(i, VT_I4);
 		if (SUCCEEDED(shellwindow->Item(va, &pdisp)) && (!!pdisp)) {
 			CComPtr<IWebBrowserApp> pwba;
-			h = pdisp->QueryInterface(IID_PPV_ARGS(&pwba));
+			HRESULT h = pdisp->QueryInterface(IID_PPV_ARGS(&pwba));
 			if (FAILED(h)) { continue; }
 			HWND hwba;
+
 			if (SUCCEEDED(pwba->get_HWND((LONG_PTR*)&hwba))) {
 				CComPtr<IServiceProvider> psp;
 				h = pwba->QueryInterface(IID_PPV_ARGS(&psp));
@@ -405,11 +301,13 @@ unsigned __stdcall selectItem(void* pArguments) {
 									try {
 										if (SUCCEEDED(pfv->SelectItem(i, SVSI_EDIT | SVSI_DESELECTOTHERS | SVSI_ENSUREVISIBLE | SVSI_POSITIONITEM))) {
 											//PostMessage(hwba, WM_KEYDOWN, VK_F2, 0);
+											CoUninitialize();
+											return S_OK;
 										}
-										break;
 									}
 									catch (const std::exception&) {
-										break;
+										CoUninitialize();
+										return E_UNEXPECTED;
 									}
 								}
 							}
@@ -421,7 +319,7 @@ unsigned __stdcall selectItem(void* pArguments) {
 		}
 	}
 	CoUninitialize();
-	return 0;
+	return E_UNEXPECTED;
 }
 
 /// <summary>
@@ -459,7 +357,7 @@ ATL::CString CNewFolderExt::longestCommonPrefix(const std::vector<ATL::CString>&
 	*/
 	ATL::CString base = strs[0];
 	int common_prefix_length = base.GetLength();
-	for (int i = 1; i < strs.size(); i++) {
+	for (size_t i = 1; i < strs.size(); i++) {
 		common_prefix_length = first_common_substring_length(base, strs[i], common_prefix_length);
 	}
 	if (common_prefix_length == 0) {
@@ -553,14 +451,22 @@ HRESULT __stdcall CNewFolderExt::GetCommandString(UINT_PTR idCmd, UINT uType, UI
 
 HRESULT __stdcall CNewFolderExt::GetTitle(IShellItemArray* psiItemArray, LPWSTR* ppszName)
 {
-	return SHStrDup(m_contextmenu_name.GetString(), ppszName);
+	UNREFERENCED_PARAMETER(psiItemArray);
+	*ppszName = nullptr;
+	auto title = wil::make_cotaskmem_string_nothrow(m_contextmenu_name.GetString());
+	RETURN_IF_NULL_ALLOC(title);
+	*ppszName = title.release();
+	return S_OK;
 }
 
 HRESULT __stdcall CNewFolderExt::GetIcon(IShellItemArray* psiItemArray, LPWSTR* ppszIcon)
 {
 	UNREFERENCED_PARAMETER(psiItemArray);
-	ATL::CString iconpath = L"%systemroot%\\system32\\shell32.dll, -20";
-	return SHStrDup(iconpath.GetString(), ppszIcon);
+	*ppszIcon = nullptr;
+	auto path = wil::make_cotaskmem_string_nothrow(L"%systemroot%\\system32\\shell32.dll, -20");
+	RETURN_IF_NULL_ALLOC(path);
+	*ppszIcon = path.release();
+	return S_OK;
 }
 
 HRESULT __stdcall CNewFolderExt::GetToolTip(IShellItemArray* psiItemArray, LPWSTR* ppszInfotip)
@@ -576,8 +482,15 @@ HRESULT __stdcall CNewFolderExt::GetCanonicalName(GUID* pguidCommandName)
 
 HRESULT __stdcall CNewFolderExt::GetState(IShellItemArray* psiItemArray, BOOL fOkToBeSlow, EXPCMDSTATE* pCmdState)
 {
+	//TODO Enable or Disable
 	UNREFERENCED_PARAMETER(psiItemArray);
-	*pCmdState = ECS_ENABLED;
+	DWORD enabled = RegGetDword(HKEY_CURRENT_USER, M_REG_BASEKEY, M_REG_ENABLE_NEWFOLDER);
+	if (!enabled) {
+		*pCmdState = ECS_HIDDEN;
+	}
+	else {
+		*pCmdState = ECS_ENABLED;
+	}
 	return S_OK;
 }
 
@@ -598,3 +511,4 @@ HRESULT __stdcall CNewFolderExt::EnumSubCommands(IEnumExplorerCommand** ppEnum)
 	*ppEnum = nullptr;
 	return E_NOTIMPL;
 }
+

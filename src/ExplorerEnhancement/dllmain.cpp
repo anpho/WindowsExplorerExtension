@@ -7,10 +7,11 @@
 #include "dllmain.h"
 
 CExplorerEnhancementModule _AtlModule;
+HINSTANCE g_hInstance = nullptr;
 
 // DLL 入口点
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
-	hInstance;
+	g_hInstance=hInstance;
 	return _AtlModule.DllMain(dwReason, lpReserved);
 }
