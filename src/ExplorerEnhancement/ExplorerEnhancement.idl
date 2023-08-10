@@ -16,6 +16,15 @@ interface INewFolderExt : IUnknown
 {
 };
 [
+	object,
+	uuid(303c2141-664e-4698-8811-58a0220d528b),
+	pointer_default(unique)
+]
+interface IBreakFolderExt : IUnknown
+{
+};
+
+[
 	uuid(ad8e9b75-e82e-4c6a-830b-4acf8c407d6c),
 	version(1.0),
 ]
@@ -29,6 +38,15 @@ library ExplorerEnhancementLib
 	{
 		[default] interface INewFolderExt;
 	};
+
+	[
+		uuid(f2a0aaf9-2961-4465-a843-884383fcd13b)
+	]
+	coclass BreakFolderExt
+	{
+		[default] interface IBreakFolderExt;
+	};
 };
 
 import "shobjidl.idl";
+

@@ -13,5 +13,6 @@ HINSTANCE g_hInstance = nullptr;
 extern "C" BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID lpReserved)
 {
 	g_hInstance=hInstance;
+	DisableThreadLibraryCalls(hInstance);
 	return _AtlModule.DllMain(dwReason, lpReserved);
 }

@@ -20,6 +20,21 @@
     <Filter Include="Module:NewFolderExt">
       <UniqueIdentifier>{22b3dfd5-fee8-46b6-8f31-2f2e6a92de57}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Module:BreakFolderExt">
+      <UniqueIdentifier>{30f42beb-928d-44f1-80cc-6faa191346f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Module:PasteXFile">
+      <UniqueIdentifier>{08688e5e-7160-4e43-8b82-b2f884964060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Thumbnail:ofd">
+      <UniqueIdentifier>{6cecd3dc-0c4e-4ad3-80f1-b891d554d0ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Thumbnail:xci">
+      <UniqueIdentifier>{2288ab1e-d33c-46b8-ae92-edd224816692}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Thumbnail:epub">
+      <UniqueIdentifier>{ab7b7e61-4ea5-463b-86dd-ffb04eb7d326}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -46,6 +61,9 @@
     <ClInclude Include="common.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="BreakFolderExt.h">
+      <Filter>Module:BreakFolderExt</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ExplorerEnhancement.cpp">
@@ -66,6 +84,9 @@
     <ClCompile Include="common.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="BreakFolderExt.cpp">
+      <Filter>Module:BreakFolderExt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ExplorerEnhancement.rc">
@@ -83,6 +104,9 @@
       <Filter>Module:NewFolderExt</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="BreakFolderExt.rgs">
+      <Filter>Module:BreakFolderExt</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="ExplorerEnhancement.idl">
@@ -90,9 +114,9 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="AppxManifest.xml" />
+    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+    <PackageLayout Include="AppxManifest.xml" />
   </ItemGroup>
 </Project>

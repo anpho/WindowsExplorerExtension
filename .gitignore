@@ -30,5 +30,5 @@
 *.exe
 *.out
 *.app
-/src/.vs/ExplorerEnhancement/v17
-/src/ExplorerEnhancement/x64/Debug
+
+/src/.vs

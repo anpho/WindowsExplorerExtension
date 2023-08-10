@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Package
-  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10/4"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
@@ -8,9 +8,9 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
   IgnorableNamespaces="uap uap2 uap3 rescap desktop uap10">
-	<Identity Name="NewFolderExtension" ProcessorArchitecture="x64" Publisher="CN=anpho" Version="1.0.0.0" />
+	<Identity Name="ExplorerEnhancement" ProcessorArchitecture="x64" Publisher="CN=anpho" Version="1.0.0.0" />
 	<Properties>
-		<DisplayName>NewFolderExtension</DisplayName>
+		<DisplayName>ExplorerEnhancement</DisplayName>
 		<PublisherDisplayName>anpho</PublisherDisplayName>
 		<Logo>logo.png</Logo>
 		<uap10:AllowExternalContent>true</uap10:AllowExternalContent>
@@ -22,5 +22,22 @@
 	<Dependencies>
 		<TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19000.0" MaxVersionTested="10.0.19000.0" />
 	</Dependencies>
-	
+	<desktop4:Extension Category="windows.fileExplorerContextMenus">
+		<desktop4:FileExplorerContextMenus>
+			<desktop5:ItemType Type="*"  >
+				<desktop5:Verb Id="NewFolderExtenstion" Clsid="c36a65af-0a1e-4e09-9729-6da3e4e4461a" />
+			</desktop5:ItemType>
+			<desktop5:ItemType Type="Directory"  >
+				<desktop5:Verb Id="NewFolderExtenstion" Clsid="c36a65af-0a1e-4e09-9729-6da3e4e4461a" />
+			</desktop5:ItemType>
+		</desktop4:FileExplorerContextMenus>
+	</desktop4:Extension>
+
+	<com:Extension Category="windows.comServer">
+		<com:ComServer>
+			<com:SurrogateServer  DisplayName="NewFolderExt">
+				<com:Class Id="c36a65af-0a1e-4e09-9729-6da3e4e4461a" Path="ExplorerEnhancement64.dll" ThreadingModel="STA"/>
+			</com:SurrogateServer>
+		</com:ComServer>
+	</com:Extension>
 </Package>

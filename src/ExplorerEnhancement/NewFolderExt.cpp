@@ -6,7 +6,7 @@
 
 
 // CNewFolderExt
-extern HINSTANCE g_hInstance;
+//extern HINSTANCE g_hInstance;
 
 CNewFolderExt::CNewFolderExt()
 {
@@ -24,6 +24,7 @@ CNewFolderExt::CNewFolderExt()
 		t.cx = GetSystemMetrics(SM_CXMENUCHECK);
 		t.cy = GetSystemMetrics(SM_CYMENUCHECK);
 		m_icon = IconToBitmap(hIcon, &t);
+		DeleteObject(hShell32);
 	}
 }
 
@@ -182,12 +183,12 @@ HRESULT __stdcall CNewFolderExt::DoCreateAndMoveItems(CMINVOKECOMMANDINFO* pici,
 	ATL::CString target_path;
 	ATL::CString common_part = find_common_prefix(selected_files, &target_path);
 	{
-		//如果没有共同前导子串，那么以第一个文件的文件名为基础，加一个随机数作为新的common Part
+		//如果没有共同前导子串，那么以第一个文件的文件名为目录名
 		if (common_part.Trim().GetLength() == 0) {
 			common_part = extract_filename_without_ext(selected_files.at(0));
-			srand(timeGetTime());
+			/*srand(timeGetTime());
 			common_part.Append(L"-");
-			common_part.Append(std::to_wstring(rand() * 7 % 100).c_str());
+			common_part.Append(std::to_wstring(rand() * 7 % 100).c_str());*/
 		}
 	}
 	RETURN_IF_FAILED(CoInitialize(NULL));

@@ -3,12 +3,12 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 8.01.0628 */
+ /* File created by MIDL compiler version 8.01.0626 */
 /* at Tue Jan 19 11:14:07 2038
  */
 /* Compiler settings for ExplorerEnhancement.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0628 
-    protocol : dce , ms_ext, c_ext, robust
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0626 
+    protocol : all , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -43,7 +43,7 @@
 #endif
 
 #ifndef DECLSPEC_XFGVIRT
-#if defined(_CONTROL_FLOW_GUARD_XFG)
+#if _CONTROL_FLOW_GUARD_XFG
 #define DECLSPEC_XFGVIRT(base, func) __declspec(xfg_virtual(base, func))
 #else
 #define DECLSPEC_XFGVIRT(base, func)
@@ -59,6 +59,13 @@ typedef interface INewFolderExt INewFolderExt;
 #endif 	/* __INewFolderExt_FWD_DEFINED__ */
 
 
+#ifndef __IBreakFolderExt_FWD_DEFINED__
+#define __IBreakFolderExt_FWD_DEFINED__
+typedef interface IBreakFolderExt IBreakFolderExt;
+
+#endif 	/* __IBreakFolderExt_FWD_DEFINED__ */
+
+
 #ifndef __NewFolderExt_FWD_DEFINED__
 #define __NewFolderExt_FWD_DEFINED__
 
@@ -69,6 +76,18 @@ typedef struct NewFolderExt NewFolderExt;
 #endif /* __cplusplus */
 
 #endif 	/* __NewFolderExt_FWD_DEFINED__ */
+
+
+#ifndef __BreakFolderExt_FWD_DEFINED__
+#define __BreakFolderExt_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class BreakFolderExt BreakFolderExt;
+#else
+typedef struct BreakFolderExt BreakFolderExt;
+#endif /* __cplusplus */
+
+#endif 	/* __BreakFolderExt_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -154,6 +173,79 @@ EXTERN_C const IID IID_INewFolderExt;
 #endif 	/* __INewFolderExt_INTERFACE_DEFINED__ */
 
 
+#ifndef __IBreakFolderExt_INTERFACE_DEFINED__
+#define __IBreakFolderExt_INTERFACE_DEFINED__
+
+/* interface IBreakFolderExt */
+/* [unique][uuid][object] */ 
+
+
+EXTERN_C const IID IID_IBreakFolderExt;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("303c2141-664e-4698-8811-58a0220d528b")
+    IBreakFolderExt : public IUnknown
+    {
+    public:
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IBreakFolderExtVtbl
+    {
+        BEGIN_INTERFACE
+        
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IBreakFolderExt * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IBreakFolderExt * This);
+        
+        DECLSPEC_XFGVIRT(IUnknown, Release)
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IBreakFolderExt * This);
+        
+        END_INTERFACE
+    } IBreakFolderExtVtbl;
+
+    interface IBreakFolderExt
+    {
+        CONST_VTBL struct IBreakFolderExtVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IBreakFolderExt_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IBreakFolderExt_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IBreakFolderExt_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IBreakFolderExt_INTERFACE_DEFINED__ */
+
+
 
 #ifndef __ExplorerEnhancementLib_LIBRARY_DEFINED__
 #define __ExplorerEnhancementLib_LIBRARY_DEFINED__
@@ -170,6 +262,14 @@ EXTERN_C const CLSID CLSID_NewFolderExt;
 
 class DECLSPEC_UUID("c36a65af-0a1e-4e09-9729-6da3e4e4461a")
 NewFolderExt;
+#endif
+
+EXTERN_C const CLSID CLSID_BreakFolderExt;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("f2a0aaf9-2961-4465-a843-884383fcd13b")
+BreakFolderExt;
 #endif
 #endif /* __ExplorerEnhancementLib_LIBRARY_DEFINED__ */
 

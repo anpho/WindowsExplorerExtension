@@ -1,0 +1,23 @@
+HKCR
+{
+	NoRemove CLSID
+	{
+		ForceRemove {f2a0aaf9-2961-4465-a843-884383fcd13b} = s 'BreakFolderExt class'
+		{
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+		}
+	}
+	NoRemove Directory
+	{
+		NoRemove ShellEx
+		{
+			NoRemove ContextMenuHandlers
+			{
+				ForceRemove BreakFolder = s '{f2a0aaf9-2961-4465-a843-884383fcd13b}'
+			}
+		}
+	}
+}
